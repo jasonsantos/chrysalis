@@ -7,16 +7,72 @@
 <script type="text/javascript" src="js/chrysalis.js"></script>
 </head>
 <body>
+<div id="chrysalis-template" style="display: none">
 <form>
-	<input id="nome" type=text name="nome" /><br/>
-	<input id="endereco" type=text name="ednereco" /><br/>
-	<input id="telefone" type=text name="telefone" /><br/>
-	<input id="cargo" type=text name="cargo" /><br/>
+	<input id="name" type=text name="name" value="${name}"/><br/>
+	<input id="addr" type=text name="addr"  value="${addr}"/><br/>
+	<input id="phone" type=text name="phone" value="${phone}" /><br/>
+	<input id="job" type=text name="job" value="${job}" /><br/>
 </form>
+</div>
+<div id="chrysalis-target">
+</div>
 <script type="text/javascript">
+
+function AssertionFailedException(messageText) {
+   this.message = messageText ? "'"+this.message + "' test failed" : "Assertion failed!";
+   this.toString = function() {
+      return this.message;
+   };
+}
+
+function assert(value, msg) {
+  if(!value) {
+    throw new AssertionFailedException(msg);
+  }
+}
+
 $(function(){
-	$('form').template();
+
+  // basic template tests
+  {
+    var obj = $('form');
+    assert(obj.template, 'object has template function');
+    var tpl = obj.template(true)
+    assert(tpl, 'template function returns');
+    assert(tpl['.prototype']=='template', 'result of function is a template');
+    assert(tpl._id, 'template has ID');
+    assert(tpl.rawText, 'template has rawText');
+
+    assert(obj.render, 'object has render function');
+    obj = $().template('${card} of ${naipe}')
+    tpl = obj.template(true);
+    assert(tpl, 'template function with string template')
+    assert(tpl['.prototype']=='template', 'result of function is a template');
+    assert(tpl._id, 'template has ID');
+    assert(tpl.rawText=='${card} of ${naipe}', 'template has rawText');
+    assert(tpl.render({card: 'ace', naipe: 'spades'})=='ace of spades', 'simple rendering test')
+  }
+
+  // basic rendering tests
+  {
+    var obj = $().template("{${foreach:list[[<${}>]]}}");
+    alert(obj.render({list:[1, 2, 3, 4, 5]}, {foreach: function(o, i, l, t) {
+      return t.replace(/[$][{][}]/g, o)
+    } }))
+  }
+
+  // rendering using convention names elements tests
+  // when from Document without parameters chrysalis will render a template
+  // from '#chrysalis-template' into target '#chrysalis-target'
+  {
+  	$().template().render({name: "Tha Man", addr: "New Street", phone: "555-8080", job: "A-team member"});
+  }
+
+//	$('body').html('OK (' + new Date() + ')');
+
 });
 </script>
 </body>
 </html>
+
