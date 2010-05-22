@@ -6,9 +6,17 @@ $(function($){
      if(obj2) for (attrname in obj2) { res[attrname] = obj2[attrname]; };
      if(obj3) for (attrname in obj3) { res[attrname] = obj3[attrname]; };
      return res;
-  }
+  };
 
-  var Template = {
+  var Template;
+  var _lastid = 0;
+  var templatify = function(strTemplate) {
+	  //TODO: create a template cache
+    return (typeof strTemplate=='object' || strTemplate._template) || merge(Template, {_id: ++_lastid, rawText: strTemplate});
+  };
+
+
+  Template = {
     '.prototype': 'template',
     _id: 0,
     pattern: /[$][{]([\w\-]+)([:]([\w\-]+)(\[\[(.*)\]\])?)?[}]/g,
@@ -27,15 +35,13 @@ $(function($){
 			    var fn = options[key];
 			    var res = [];
 			    var n = 1;
-			    var o = data[param];
+			    var o = param=='_' ? data : data[param];
 			    if(!o)
 			      throw new Error("object "+param+" not found for action '"+key+"'");
-			    if(typeof o == 'object' && typeof o.length=='number') {
-				    n = o.length;
-			    }
-			    for(var i=0;i<n;i++) {
-				    res.push(fn(o[i], i, o, optional));
-			    }
+			    if(typeof o == 'object')
+				    for(var i in o) {
+					    res.push(fn(o[i], i, o, optional, templatify));
+				    }
 			    return res.join('');
 		    } else {
 			    return (data[key] || '' );
@@ -43,11 +49,6 @@ $(function($){
       });
     }
   };
-
-  var _lastid = 0;
-  var templatify = function(strTemplate) {
-    return (typeof strTemplate=='object' || strTemplate._template) || merge(Template, {_id: ++_lastid, rawText: strTemplate});
-  }
 
 	var Chrysalis = {
 		template : function(idOrText, isText) {
