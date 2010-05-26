@@ -30,7 +30,7 @@ $(function($){
       var options = merge(Template, options);
       if(!this.rawText)
         throw new Error("Cannot render an empty or uninitialized template");
-      return this.rawText.replace(this.pattern, function(m, key, _, param, __, optional) {
+      return this.rawText.replace(/^(\s*<!--)/, '').replace(/(-->\s*)$/, '').replace(this.pattern, function(m, key, _, param, __, optional) {
 		    if (param && typeof options[key] == 'function') {
 			    var fn = options[key];
 			    var res = [];
@@ -62,9 +62,13 @@ $(function($){
 					}
 				case 'object':
 					el = el  || $(idOrText);
-					if(el.length)
-						template = el._template || el.html();
-					else
+					if(el.length) {
+						if(el._template)
+							template = el._template;
+						else {
+							template = el.get(0).innerHTML;
+						}
+					} else
 						throw new Error("Template not found");
 					break;
 				default:

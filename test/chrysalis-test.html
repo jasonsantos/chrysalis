@@ -60,6 +60,7 @@ $(function(){
     alert(obj.render({list:[1, 2, 3, 4, 5]}, {foreach: function(o, i, l, t) {
       return t.replace(/[$][{][}]/g, o)
     } }))
+
   }
 
   // rendering using convention names elements tests
